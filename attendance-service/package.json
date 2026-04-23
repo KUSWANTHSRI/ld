@@ -1,0 +1,25 @@
+{
+    "name":  "attendance-service",
+    "version":  "1.0.0",
+    "description":  "",
+    "main":  "index.js",
+    "scripts":  {
+                    "test":  "echo no test",
+                    "dev":  "node index.js",
+                    "start":  "node index.js"
+                },
+    "keywords":  [
+
+                 ],
+    "author":  "",
+    "license":  "ISC",
+    "type":  "commonjs",
+    "dependencies":  {
+                         "cors":  "^2.8.6",
+                         "dotenv":  "^17.4.2",
+                         "express":  "^5.2.1",
+                         "joi":  "^18.1.2",
+                         "jsonwebtoken":  "^9.0.3",
+                         "mongoose":  "^9.5.0"
+                     }
+}

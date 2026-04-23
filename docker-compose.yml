@@ -1,0 +1,111 @@
+version: '3.8'
+
+services:
+  mongodb:
+    image: mongo:6
+    container_name: mongodb
+    ports:
+      - "27017:27017"
+    environment:
+      MONGO_INITDB_ROOT_USERNAME: ${MONGO_ROOT_USER}
+      MONGO_INITDB_ROOT_PASSWORD: ${MONGO_ROOT_PASSWORD}
+    volumes:
+      - mongodb_data:/data/db
+    networks:
+      - training-network
+
+  auth-service:
+    build: ./auth-service
+    container_name: auth-service
+    ports:
+      - "3001:3001"
+    environment:
+      - PORT=3001
+      - MONGO_URI=mongodb://${MONGO_ROOT_USER}:${MONGO_ROOT_PASSWORD}@mongodb:27017/training_auth_db?authSource=admin
+      - JWT_SECRET=${JWT_SECRET}
+      - USER_SERVICE_URL=http://user-service:3002
+      - NODE_ENV=development
+    depends_on:
+      - mongodb
+      - user-service
+    networks:
+      - training-network
+
+  user-service:
+    build: ./user-service
+    container_name: user-service
+    ports:
+      - "3002:3002"
+    environment:
+      - PORT=3002
+      - MONGO_URI=mongodb://${MONGO_ROOT_USER}:${MONGO_ROOT_PASSWORD}@mongodb:27017/training_user_db?authSource=admin
+      - NODE_ENV=development
+    depends_on:
+      - mongodb
+    networks:
+      - training-network
+
+  training-service:
+    build: ./training-service
+    container_name: training-service
+    ports:
+      - "3003:3003"
+    environment:
+      - PORT=3003
+      - MONGO_URI=mongodb://${MONGO_ROOT_USER}:${MONGO_ROOT_PASSWORD}@mongodb:27017/training_programs_db?authSource=admin
+      - NODE_ENV=development
+    depends_on:
+      - mongodb
+    networks:
+      - training-network
+
+  attendance-service:
+    build: ./attendance-service
+    container_name: attendance-service
+    ports:
+      - "3004:3004"
+    environment:
+      - PORT=3004
+      - MONGO_URI=mongodb://${MONGO_ROOT_USER}:${MONGO_ROOT_PASSWORD}@mongodb:27017/training_attendance_db?authSource=admin
+      - NODE_ENV=development
+    depends_on:
+      - mongodb
+    networks:
+      - training-network
+
+  api-gateway:
+    build: ./api-gateway
+    container_name: api-gateway
+    ports:
+      - "3000:3000"
+    environment:
+      - PORT=3000
+      - JWT_SECRET=${JWT_SECRET}
+      - AUTH_SERVICE_URL=http://auth-service:3001
+      - USER_SERVICE_URL=http://user-service:3002
+      - TRAINING_SERVICE_URL=http://training-service:3003
+      - ATTENDANCE_SERVICE_URL=http://attendance-service:3004
+    depends_on:
+      - auth-service
+      - user-service
+      - training-service
+      - attendance-service
+    networks:
+      - training-network
+
+  frontend:
+    build: ./frontend
+    container_name: frontend
+    ports:
+      - "5173:5173"
+    depends_on:
+      - api-gateway
+    networks:
+      - training-network
+
+networks:
+  training-network:
+    driver: bridge
+
+volumes:
+  mongodb_data:
