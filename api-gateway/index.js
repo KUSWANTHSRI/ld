@@ -52,6 +52,10 @@ app.use('/api/users', createProxyMiddleware(proxyOptions(services.users, '/api/u
 app.use('/api/trainings', createProxyMiddleware(proxyOptions(services.trainings, '/api/trainings')));
 app.use('/api/attendance', createProxyMiddleware(proxyOptions(services.attendance, '/api/attendance')));
 
+// Stats Aggregation Routes
+const statsRoutes = require('./routes/stats');
+app.use('/api/stats', statsRoutes);
+
 app.get('/', (req, res) => res.send('API Gateway is running.'));
 
 // Global error handler

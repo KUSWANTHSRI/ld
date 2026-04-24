@@ -27,6 +27,18 @@ exports.getAllUsers = async (req, res, next) => {
     }
 };
 
+exports.getStats = async (req, res, next) => {
+    try {
+        const total = await User.countDocuments();
+        const employees = await User.countDocuments({ role: 'Employee' });
+        const trainers = await User.countDocuments({ role: 'Trainer' });
+        const admins = await User.countDocuments({ role: 'Admin' });
+        res.json({ total, employees, trainers, admins });
+    } catch (error) {
+        next(error);
+    }
+};
+
 // Get current user profile based on gateway header
 exports.getCurrentUser = async (req, res, next) => {
     try {
